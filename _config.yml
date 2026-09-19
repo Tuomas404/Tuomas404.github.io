@@ -1,0 +1,21 @@
+# --- Perustiedot ---
+title: Tuomas Saarinen
+description: >-
+  Tietoverkot, tietoturva ja palvelinylläpito.
+  Dokumentoituja käytännön toteutuksia.
+author: Tuomas Saarinen
+
+# GitHub Pages täyttää sivuston osoitteen automaattisesti,
+# joten sitä ei tarvitse kirjoittaa tänne.
+
+# --- Teema ja lisäosat ---
+# minima, jekyll-feed ja jekyll-seo-tag kuuluvat GitHub Pagesin tukemiin.
+theme: minima
+show_excerpts: true
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+exclude:
+  - README.md
