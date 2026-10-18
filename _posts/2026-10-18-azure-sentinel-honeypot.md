@@ -86,7 +86,7 @@ SecurityEvent
 | Toiminta | 81 epäonnistunutta RDP-kirjautumista yhdestä IP:stä klo 15:59–19:58 UTC, enimmillään 21 tunnissa |
 | IP:n sijainti | Intia (sijainti kertoo, missä IP on, ei kuka hyökkääjä on) |
 | Kokeillut tunnukset | `Administrator`, `Admin`: kumpaakaan ei ole koneella |
-| Onnistuneet etäkirjautumiset | Ei yhtään (ei EventID 4624 tyyppiä 3 tai 10 ulkoisista IP:istä 3 vuorokauteen) |
+| Onnistuneet etäkirjautumiset | Ei yhtään (ei EventID 4624 tyyppiä 3 tai 10 ulkoisista IP:istä 3 vuorokauden aikana) |
 | Lopputulos | Ei murtoa. Toiminta loppui VM:n iltaiseen automaattiseen sammutukseen |
 | Luokitus | *True Positive* (oikea uhka tunnistettu) |
 
@@ -98,7 +98,7 @@ Muutama muu IP teki 1–2 yritystä (skannereita). Ne jäivät tarkoituksella mo
 
 ## Säännöt koodina (CI/CD)
 
-Tunnistussäännöt ovat repossa JSON-tiedostoina. Kun muutan sääntöä ja puskean sen `main`-haaraan, GitHub Actions tarkistaa tiedostot ja julkaisee ne Sentineliin.
+Tunnistussäännöt ovat repossa JSON-tiedostoina. Kun muutan sääntöä ja pusken sen `main`-haaraan, GitHub Actions tarkistaa tiedostot ja julkaisee ne Sentineliin.
 
 ```
 [git push rules/*.json]
