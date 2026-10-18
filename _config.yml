@@ -4,6 +4,11 @@ description: >-
   Tietoverkot, tietoturva ja palvelinylläpito.
   Dokumentoituja käytännön toteutuksia.
 author: Tuomas Saarinen
+lang: fi
+locale: fi_FI
+
+minima:
+  date_format: "%-d.%-m.%Y"
 
 # GitHub Pages täyttää sivuston osoitteen automaattisesti,
 # joten sitä ei tarvitse kirjoittaa tänne.
