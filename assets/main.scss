@@ -1,0 +1,163 @@
+---
+---
+
+// Minima-teeman värit ja fontit ennen teeman latausta
+$brand-color: #0b7a75;
+$base-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$content-width: 820px;
+
+@import "minima";
+
+// --- Omat värit (vaalea ja tumma tila) ---
+:root {
+  --bg: #f6f8fa;
+  --surface: #ffffff;
+  --text: #1c2430;
+  --muted: #5b6675;
+  --border: #e1e6ec;
+  --accent: #0b7a75;
+  --accent-soft: #e7f4f3;
+  --code-bg: #eef2f6;
+  --mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f141a;
+    --surface: #161d25;
+    --text: #e3e9ef;
+    --muted: #96a3b1;
+    --border: #2a3440;
+    --accent: #3cc5bc;
+    --accent-soft: #143331;
+    --code-bg: #1c252f;
+  }
+  // Minimán koodivärit on tehty vaalealle taustalle
+  .highlight, .highlight * { color: inherit !important; background: none !important; }
+}
+
+// --- Perusta ---
+body { background: var(--bg); color: var(--text); }
+a { color: var(--accent); }
+a:visited { color: var(--accent); }
+h1, h2, h3, h4 { color: var(--text); letter-spacing: -0.01em; }
+
+// --- Ylätunniste ---
+.site-header {
+  background: var(--surface);
+  border-top: 4px solid var(--accent);
+  border-bottom: 1px solid var(--border);
+}
+.site-title, .site-title:visited {
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+// --- Etusivu ---
+.home > p:first-child {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+.post-list-heading {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-top: 40px;
+}
+
+// Projektit kortteina, koko kortti on klikattava
+.post-list > li {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.post-list > li:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+.post-list h3 { margin: 6px 0 8px; }
+.post-link, .post-link:visited {
+  color: var(--text);
+  font-size: 1.3rem;
+  line-height: 1.35;
+}
+.post-link::after { content: ""; position: absolute; inset: 0; }
+.post-list > li p { color: var(--muted); margin-bottom: 0; }
+
+.post-meta {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+// --- Kirjoitussivu ---
+.post-title { font-size: 2rem; line-height: 1.25; }
+
+// "Lyhyesti"-kappale korostuslaatikoksi
+.post-content > p:first-child {
+  background: var(--accent-soft);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+}
+.post-content h2 {
+  margin-top: 40px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.post-content hr { border: 0; border-top: 1px solid var(--border); margin: 32px 0; }
+
+// Kuvakaappaukset
+.post-content img {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  margin: 8px 0 24px;
+}
+
+// Koodi
+pre, code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--mono);
+  color: var(--text);
+}
+.highlight { background: var(--code-bg); }
+pre { padding: 14px 16px; }
+
+// Taulukot
+.post-content table {
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.post-content table th {
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+}
+.post-content table td { border: 1px solid var(--border); }
+.post-content table tr:nth-child(even) { background: var(--bg); }
+
+// Puhelimella leveä taulukko vierii sivuttain eikä riko sivua
+@media (max-width: 600px) {
+  .post-content table { display: block; overflow-x: auto; }
+  .post-title { font-size: 1.6rem; }
+}
+
+// --- Alatunniste ---
+.site-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+}
