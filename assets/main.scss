@@ -184,11 +184,15 @@ pre, code {
 code { padding: 1px 5px; }
 pre { padding: 16px 18px; border-left: 2px solid var(--signal); }
 pre code { border: 0; padding: 0; font-size: 1em; }
-.highlight { background: var(--panel); }
-.highlight * { background: none !important; color: inherit; font-weight: normal; }
-.highlight .c, .highlight .c1, .highlight .cm { color: var(--muted); font-style: italic; }
-.highlight .k, .highlight .kd, .highlight .nb { color: var(--electric); }
-.highlight .s, .highlight .s1, .highlight .s2 { color: #e6f58a; }
+// Minima antaa koodilaatikoille vaalean taustan säännöllä
+// ".highlighter-rouge .highlight", joten sama tarkkuus tarvitaan tässä
+.highlight,
+.highlighter-rouge .highlight { background: var(--panel); }
+// Syntaksivärit tummalle taustalle (minimán värit on tehty vaalealle)
+.highlight span { background: none !important; color: inherit !important; font-weight: normal !important; }
+.highlight .c, .highlight .c1, .highlight .cm { color: var(--muted) !important; font-style: italic; }
+.highlight .k, .highlight .kd, .highlight .nb { color: var(--electric) !important; }
+.highlight .s, .highlight .s1, .highlight .s2 { color: #e6f58a !important; }
 
 // Taulukot kuin KQL-kyselyn tulos
 .post-content table {
