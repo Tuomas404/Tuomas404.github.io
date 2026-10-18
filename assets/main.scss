@@ -1,58 +1,59 @@
 ---
 ---
 
-// Minima-teeman värit ja fontit ennen teeman latausta
-$brand-color: #0b7a75;
+// Minima-teeman omat muuttujat tummiksi ennen teeman latausta
+$background-color: #07090c;
+$text-color: #dbe4ec;
+$brand-color: #39ff14;
+$grey-color: #8b98a6;
+$grey-color-light: #1e2630;
+$grey-color-dark: #c5d0da;
 $base-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 $content-width: 820px;
 
 @import "minima";
 
-// --- Omat värit (vaalea ja tumma tila) ---
+// --- Värit ---
 :root {
-  --bg: #f6f8fa;
-  --surface: #ffffff;
-  --text: #1c2430;
-  --muted: #5b6675;
-  --border: #e1e6ec;
-  --accent: #0b7a75;
-  --accent-soft: #e7f4f3;
-  --code-bg: #eef2f6;
+  color-scheme: dark;
+  --bg: #07090c;
+  --surface: #0e1217;
+  --text: #dbe4ec;
+  --muted: #8b98a6;
+  --border: #1e2630;
+  --neon-green: #39ff14;
+  --electric: #2ec5ff;
   --mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f141a;
-    --surface: #161d25;
-    --text: #e3e9ef;
-    --muted: #96a3b1;
-    --border: #2a3440;
-    --accent: #3cc5bc;
-    --accent-soft: #143331;
-    --code-bg: #1c252f;
-  }
-  // Minimán koodivärit on tehty vaalealle taustalle
-  .highlight, .highlight * { color: inherit !important; background: none !important; }
 }
 
 // --- Perusta ---
 body { background: var(--bg); color: var(--text); }
-a { color: var(--accent); }
-a:visited { color: var(--accent); }
-h1, h2, h3, h4 { color: var(--text); letter-spacing: -0.01em; }
+a, a:visited { color: var(--neon-green); text-decoration: none; }
+a:hover { color: var(--electric); text-decoration: underline; }
+h1, h2, h3, h4 { color: #ffffff; letter-spacing: -0.01em; }
+::selection { background: var(--neon-green); color: #000; }
 
-// --- Ylätunniste ---
+// --- Ylätunniste: sininen-vihreä liukuväriraita ---
 .site-header {
-  background: var(--surface);
-  border-top: 4px solid var(--accent);
+  background: var(--bg);
+  border-top: 0;
   border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.site-header::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--electric), var(--neon-green));
 }
 .site-title, .site-title:visited {
-  color: var(--text);
+  font-family: var(--mono);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  color: var(--neon-green);
+  text-shadow: 0 0 12px rgba(57, 255, 20, 0.45);
 }
+.site-title:hover { text-decoration: none; color: var(--neon-green); }
 
 // --- Etusivu ---
 .home > p:first-child {
@@ -64,90 +65,104 @@ h1, h2, h3, h4 { color: var(--text); letter-spacing: -0.01em; }
   font-family: var(--mono);
   font-size: 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--accent);
+  letter-spacing: 0.14em;
+  color: var(--electric);
   margin-top: 40px;
 }
+.post-list-heading::before { content: "> "; color: var(--neon-green); }
 
 // Projektit kortteina, koko kortti on klikattava
 .post-list > li {
   position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 20px 24px;
   margin-bottom: 16px;
   transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 .post-list > li:hover {
-  border-color: var(--accent);
+  border-color: var(--neon-gren);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0 24px rgba(57, 255, 20, 0.15);
 }
 .post-list h3 { margin: 6px 0 8px; }
 .post-link, .post-link:visited {
-  color: var(--text);
+  color: #ffffff;
   font-size: 1.3rem;
   line-height: 1.35;
 }
+.post-link:hover { color: var(--neon-green); text-decoration: none; }
 .post-link::after { content: ""; position: absolute; inset: 0; }
 .post-list > li p { color: var(--muted); margin-bottom: 0; }
 
 .post-meta {
   font-family: var(--mono);
   font-size: 0.8rem;
-  color: var(--muted);
+  color: var(--electric);
 }
 
 // --- Kirjoitussivu ---
-.post-title { font-size: 2rem; line-height: 1.25; }
+.post-title {
+  font-size: 2rem;
+  line-height: 1.25;
+  color: #ffffff;
+}
 
 // "Lyhyesti"-kappale korostuslaatikoksi
 .post-content > p:first-child {
-  background: var(--accent-soft);
-  border-left: 4px solid var(--accent);
+  background: rgba(46, 197, 255, 0.08);
+  border-left: 3px solid var(--electric);
   border-radius: 0 8px 8px 0;
   padding: 14px 18px;
 }
 .post-content h2 {
-  margin-top: 40px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border);
+  margin-top: 44px;
+  padding-left: 12px;
+  border-left: 3px solid var(--neon-green);
 }
+.post-content strong { color: #ffffff; }
 .post-content hr { border: 0; border-top: 1px solid var(--border); margin: 32px 0; }
 
 // Kuvakaappaukset
 .post-content img {
   border: 1px solid var(--border);
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   margin: 8px 0 24px;
 }
 
 // Koodi
 pre, code {
-  background: var(--code-bg);
+  background: #0b0f14;
   border: 1px solid var(--border);
   border-radius: 6px;
   font-family: var(--mono);
-  color: var(--text);
+  color: #c8f7cf;
 }
-.highlight { background: var(--code-bg); }
+.highlight { background: #0b0f14; }
 pre { padding: 14px 16px; }
+// Syntaksivärit tummalle taustalle
+.highlight * { background: none !important; color: inherit; font-weight: normal; }
+.highlight .c, .highlight .c1, .highlight .cm { color: var(--muted); font-style: italic; }
+.highlight .k, .highlight .kd, .highlight .nb { color: var(--electric); }
+.highlight .s, .highlight .s1, .highlight .s2 { color: #ffd166; }
+.highlight .m, .highlight .mi { color: #ff7edb; }
 
 // Taulukot
 .post-content table {
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
 }
 .post-content table th {
-  background: var(--accent-soft);
+  background: #0f1a14;
+  color: var(--neon-green);
+  font-family: var(--mono);
+  font-size: 0.85rem;
   border: 1px solid var(--border);
 }
 .post-content table td { border: 1px solid var(--border); }
-.post-content table tr:nth-child(even) { background: var(--bg); }
+.post-content table tr { background: var(--surface); }
+.post-content table tr:nth-child(even) { background: #11161c; }
 
 // Puhelimella leveä taulukko vierii sivuttain eikä riko sivua
 @media (max-width: 600px) {
@@ -155,9 +170,15 @@ pre { padding: 14px 16px; }
   .post-title { font-size: 1.6rem; }
 }
 
+// Ei liike-efektejä, jos käyttäjä on ne käyttöjärjestelmästä kieltänyt
+@media (prefers-reduced-motion: reduce) {
+  .post-list > li { transition: none; }
+  .post-list > li:hover { transform: none; }
+}
+
 // --- Alatunniste ---
 .site-footer {
-  background: var(--surface);
+  background: var(--bg);
   border-top: 1px solid var(--border);
   color: var(--muted);
 }
