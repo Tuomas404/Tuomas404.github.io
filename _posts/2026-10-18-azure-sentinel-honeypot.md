@@ -2,13 +2,13 @@
 layout: post
 title: "Azure Sentinel -honeypot: oikean brute force -hyökkäyksen tunnistus omilla säännöillä"
 date: 2026-10-18
-excerpt: "Internetiin avattu Windows Server Azuressa ja Microsoft Sentinel: kaksi omaa tunnistussääntöä (MITRE T1110), kontrolloidut testit ja oikea 81 yrityksen hyökkäys tunnistettuna, tutkittuna ja suljettuna."
-tags: [azure, microsoft-sentinel, kql, log-analytics, windows-server, azure-cli, mitre-attack, soc]
+excerpt: "Internetiin avattu Windows Server Azuressa ja Microsoft Sentinel: kaksi omaa tunnistussääntöä (MITRE T1110), kontrolloidut testit ja oikea 81 yrityksen hyökkäys tunnistettuna, tutkittuna ja suljettuna. Säännöt julkaistaan koodina GitHub Actionsilla."
+tags: [azure, microsoft-sentinel, kql, log-analytics, windows-server, azure-cli, github-actions, oidc, mitre-attack, soc]
 ---
 
-**Lyhyesti:** Rakensin Azureen tarkoituksella internetiin avoimen Windows Server -koneen (honeypot = houkutuslaite) ja kytkin sen Microsoft Sentineliin. Kirjoitin kaksi omaa tunnistussääntöä RDP-brute forcelle, validoin molemmat omilla testeillä ja tunnistin ensimmäisen oikean hyökkäyksen vuorokauden sisällä. Koko labra rakentuu ja purkautuu skripteillä. Toteutin projektin itsenäisesti lokakuussa 2026.
+**Lyhyesti:** Rakensin Azureen tarkoituksella internetiin avoimen Windows Server -koneen (honeypot = houkutuslaite) ja kytkin sen Microsoft Sentineliin. Kirjoitin kaksi omaa tunnistussääntöä RDP-brute forcelle, validoin molemmat omilla testeillä ja tunnistin ensimmäisen oikean hyökkäyksen vuorokauden sisällä. Säännöt ovat Gitissä, ja GitHub Actions julkaisee ne Sentineliin automaattisesti ilman tallennettuja salasanoja. Koko labra rakentuu ja purkautuu skripteillä. Toteutin projektin itsenäisesti lokakuussa 2026.
 
-**Teknologiat:** Microsoft Azure · Microsoft Sentinel · Log Analytics · KQL · Azure Monitor Agent · Data Collection Rule · Windows Server 2025 (Trusted Launch) · Azure CLI · Bash · MITRE ATT&CK
+**Teknologiat:** Microsoft Azure · Microsoft Sentinel · Log Analytics · KQL · Azure Monitor Agent · Data Collection Rule · Windows Server 2025 (Trusted Launch) · Azure CLI · Bash · GitHub Actions · OIDC · MITRE ATT&CK
 
 **Koodi:** [github.com/Tuomas404/azure-sentinel-honeypot](https://github.com/Tuomas404/azure-sentinel-honeypot)
 
@@ -96,20 +96,44 @@ Sääntö 1 loi yhdestä hyökkääjästä neljä incidenttiä, yhden jokaisella
 
 Muutama muu IP teki 1–2 yritystä (skannereita). Ne jäivät tarkoituksella molempien sääntöjen rajan alle.
 
+## Säännöt koodina (CI/CD)
+
+Tunnistussäännöt ovat repossa JSON-tiedostoina. Kun muutan sääntöä ja puskean sen `main`-haaraan, GitHub Actions tarkistaa tiedostot ja julkaisee ne Sentineliin.
+
+```
+[git push rules/*.json]
+   │
+   ▼
+[GitHub Actions]  tarkistaa, että jokaisessa säännössä on tunniste, nimi ja kysely
+   │  virheellinen → pysähtyy, mitään ei julkaista
+   ▼
+[Azure-kirjautuminen OIDC:llä]  lyhytikäinen tunniste, ei salasanaa
+   │
+   ▼
+[deploy-rules.sh] → [Microsoft Sentinel]
+```
+
+- **Ei tallennettuja salasanoja:** GitHub saa jokaiselle ajolle lyhytikäisen tunnisteen, ja Azure hyväksyy sen vain tämän repon `main`-haarasta.
+- **Vähimmät oikeudet:** GitHubin identiteetillä on vain *Microsoft Sentinel Contributor* -rooli labran resurssiryhmään. Se voi muokata sääntöjä, mutta ei koske virtuaalikoneeseen, verkkoon tai oikeuksiin.
+- **Testattu päästä päähän:** muutin säännön 1 kuvauksen Gitissä, ja uusi teksti ja muokkausaika näkyivät Sentinelissä ilman yhtään käsin tehtyä vaihetta.
+- **Miksi tämä on tärkeää:** jokainen säännön muutos jää Git-historiaan. Tunnistussäännön hiljainen heikentäminen on yksi tapa piilottaa hyökkäys, joten muutosten jäljitettävyys on tietoturvatiimissä vaatimus.
+
 ## Mitä opin
 
 - **Ei-oletus ylläpitäjätunnus toimii:** hyökkääjä kokeili vain `Administrator`- ja `Admin`-tunnuksia, joten arvailu ei koskaan osunut oikeaan tiliin.
 - **Tapahtumat eivät ole yrityksiä:** 10 yritystä tuotti 12 epäonnistumistapahtumaa. Kynnysarvot pitää mitoittaa sen mukaan.
 - **Testit vaikuttavat toisiinsa:** 24 tunnin sääntö näkee vielä eilisen testin, joten testit pitää ajoittaa toistensa ikkunoiden ulkopuolelle.
 - **Tilin lukitus on kompromissi:** se pysäyttää arvailun, mutta tunnuksen tietävä voi lukita tilin tahallaan (palvelunesto).
+- **GitHubin OIDC-tunnisteen muoto:** ensimmäinen kirjautuminen epäonnistui, koska tunnisteessa oli repon nimen lisäksi sen pysyvä numerotunniste. Nimi voi vapautua toiselle, jos repo poistetaan, numero ei. Virheilmoitus näytti tarkan muodon, jolle luottamus piti antaa.
+- **Vähimmissä oikeuksissa on aukkoja:** Sentinel-rooli saa muokata sääntöjä, mutta ei lukea itse Log Analytics -workspacea. Workflow antaa workspacen tunnisteen valmiina, joten laajempaa roolia ei tarvittu.
 - **Väärä oletustilaus:** Azure CLI käytti aluksi toista tilausta, joten jokainen komento kiinnittää nyt `--subscription`-parametrin.
 
 ## Mitä tekisin nyt toisin
 
 - Infrastruktuuri koodina Bicepillä Bash-skriptien sijaan
 - Automaatiosääntö, joka sulkee omien testi-IP:ideni incidentit automaattisesti
-- GitHub Actions, joka julkaisee säännöt Sentineliin jokaisesta `rules/`-kansion muutoksesta
+- Säännöille testi, joka ajaa KQL-kyselyn ennen julkaisua eikä tarkista pelkkää tiedoston rakennetta
 
 ## Kustannukset
 
-Budjettihälytys, VM:n automaattinen sammutus joka ilta, Sentinelin 31 päivän ilmaisjakso ja `teardown.sh`, joka poistaa kaiken. Koko labra rakentuu uudelleen noin 15 minuutissa komennolla `bash deploy.sh`.
+Budjettihälytys, VM:n automaattinen sammutus joka ilta, Sentinelin 31 päivän ilmaisjakso ja `teardown.sh`, joka poistaa kaiken. Koko labra rakentuu uudelleen noin 15 minuutissa komennolla `bash deploy.sh`, ja GitHubin identiteetti luodaan sen jälkeen komennolla `bash setup-ci.sh`.
