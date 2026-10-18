@@ -2,7 +2,7 @@
 layout: post
 title: "Azure Sentinel -honeypot: oikean brute force -hyökkäyksen tunnistus omilla säännöillä"
 date: 2026-10-18
-excerpt: "Internetiin avattu Windows Server Azuressa ja Microsoft Sentinel: kaksi omaa tunnistussääntöä (MITRE T1110), kontrolloidut testit ja oikea 81 yrityksen hyökkäys tunnistettuna, tutkittuna ja suljettuna. Säännöt julkaistaan koodina GitHub Actionsilla."
+excerpt: "Internetiin avattu Windows Server Azuressa ja Microsoft Sentinel: kaksi omaa tunnistussääntöä (MITRE T1110), kontrolloidut testit ja oikea hyökkäys (81 epäonnistunutta kirjautumistapahtumaa) tunnistettuna, tutkittuna ja suljettuna. Säännöt julkaistaan koodina GitHub Actionsilla."
 tags: [azure, microsoft-sentinel, kql, log-analytics, windows-server, azure-cli, github-actions, oidc, mitre-attack, soc]
 ---
 
@@ -83,7 +83,7 @@ SecurityEvent
 
 | | |
 |---|---|
-| Toiminta | 81 epäonnistunutta RDP-kirjautumista yhdestä IP:stä klo 15:59–19:58 UTC, enimmillään 21 tunnissa |
+| Toiminta | 81 epäonnistunutta kirjautumistapahtumaa (EventID 4625) yhdestä IP:stä klo 15:59–19:58 UTC, enimmillään 21 tunnissa |
 | IP:n sijainti | Intia (sijainti kertoo, missä IP on, ei kuka hyökkääjä on) |
 | Kokeillut tunnukset | `Administrator`, `Admin`: kumpaakaan ei ole koneella |
 | Onnistuneet etäkirjautumiset | Ei yhtään (ei EventID 4624 tyyppiä 3 tai 10 ulkoisista IP:istä 3 vuorokauden aikana) |
@@ -94,7 +94,7 @@ Sääntö 1 loi yhdestä hyökkääjästä neljä incidenttiä, yhden jokaisella
 
 ![Oikea hyökkäys: incident suljettu](https://github.com/user-attachments/assets/6377fb31-1551-4aa1-9b93-4a00e9739fcd)
 
-Muutama muu IP teki 1–2 yritystä (skannereita). Ne jäivät tarkoituksella molempien sääntöjen rajan alle.
+Muutama muu IP tuotti 1–2 tapahtumaa (skannereita). Ne jäivät tarkoituksella molempien sääntöjen rajan alle.
 
 ## Säännöt koodina (CI/CD)
 
