@@ -53,7 +53,7 @@ Molemmat säännöt tunnistavat lähde-IP:n entiteetiksi ja ryhmittelevät saman
 
 | | Sääntö 1: nopea brute force | Sääntö 2: low-and-slow |
 |---|---|---|
-| Logiikka | ≥ 10 epäonnistunutta kirjautumista (4625) yhdestä IP:stä tunnissa | ≥ 20 / 24 h, vähintään 3 eri tuntina, alle 10 missään tunnissa |
+| Logiikka | ≥ 10 epäonnistunutta kirjautumistapahtumaa (4625) yhdestä IP:stä tunnissa | ≥ 20 / 24 h, vähintään 3 eri tuntina, alle 10 missään tunnissa |
 | Ajo | Tunnin välein | 6 tunnin välein, 24 h ikkuna |
 | MITRE ATT&CK | T1110 Brute Force | T1110 Brute Force |
 
@@ -71,7 +71,7 @@ SecurityEvent
 
 ## Validointi
 
-**Testi 1, nopea brute force (17.10.2026):** 10 epäonnistunutta RDP-kirjautumista omasta IP:stä tunnin sisällä. Lokeissa 12 × EventID 4625 ja 1 × EventID 4740 (tili lukittui 10 yrityksen jälkeen). Sääntö 1 loi incidentin, joka suljettiin luokalla *Benign Positive* (oikea ilmiö, mutta ei uhka).
+**Testi 1, nopea brute force (17.10.2026):** 10 epäonnistunutta RDP-kirjautumisyritystä omasta IP:stä tunnin sisällä. Lokeissa 12 × EventID 4625 ja 1 × EventID 4740 (tili lukittui 10 yrityksen jälkeen). Sääntö 1 loi incidentin, joka suljettiin luokalla *Benign Positive* (oikea ilmiö, mutta ei uhka).
 
 ![Sääntö 1: incident auki](https://github.com/user-attachments/assets/fd066b66-af2d-45b8-a49e-0bc1dc616f7c)
 
