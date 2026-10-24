@@ -2,7 +2,7 @@
 layout: post
 title: "osTicket oppilaitokselle: VPN-rajattu julkaisu Proxmoxilla ja OPNsensellä"
 date: 2025-12-08
-excerpt: "Tukipyyntöjärjestelmä oppilaitoksen omaan infrastruktuuriin: Proxmox, Ubuntu-palvelin ja OPNsense. Internetistä palveluun pääsi vain WireGuard-VPN:n kautta, ja HTTPS-sertifikaatti uusiutui automaattisesti."
+excerpt: "Otin oppilaitokselle käyttöön osTicket-tukipyyntöjärjestelmän, joka ei näy julkiseen internetiin."
 tags: [proxmox, ubuntu, opnsense, wireguard, caddy, lets-encrypt, apache, mariadb, linux]
 ---
 

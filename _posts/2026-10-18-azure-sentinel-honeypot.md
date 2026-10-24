@@ -2,7 +2,7 @@
 layout: post
 title: "Microsoft Sentinel -honeypot: oikean brute force -hyökkäyksen tunnistus omilla säännöillä"
 date: 2026-10-18
-excerpt: "Internetiin avattu Windows Server Azuressa ja Microsoft Sentinel: kaksi omaa tunnistussääntöä (MITRE T1110), kontrolloidut testit ja oikea hyökkäys (81 epäonnistunutta kirjautumistapahtumaa) tunnistettuna, tutkittuna ja suljettuna. Säännöt julkaistaan koodina GitHub Actionsilla."
+excerpt: "Tunnistin Microsoft Sentinelillä oikean brute force -hyökkäyksen omilla tunnistussäännöilläni."
 tags: [azure, microsoft-sentinel, kql, log-analytics, windows-server, azure-cli, github-actions, oidc, mitre-attack, soc]
 ---
 

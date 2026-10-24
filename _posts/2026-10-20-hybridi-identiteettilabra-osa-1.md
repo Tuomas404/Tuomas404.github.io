@@ -2,7 +2,7 @@
 layout: post
 title: "Hybridi-identiteettilabra, osa 1: Active Directory ja käyttäjien elinkaari PowerShellillä"
 date: 2026-10-20
-excerpt: "Hyper-V-labra, jossa Windows Server 2025 -toimialueohjain, toimialueeseen liitetty Windows 11 -työasema ja PowerShell-automaatio käyttäjien käyttöönottoon ja käytöstä poistoon. HelpDeskin oikeudet rajattu vähimpiin, tilin lukitus ja Windows LAPS käytössä ja testattu. Osassa 2 ympäristö synkronoidaan Entra ID:hen."
+excerpt: "Automatisoin Active Directoryn käyttäjähallinnan PowerShellillä: uudet tunnukset luodaan ja lähtijöiden tunnukset suljetaan yhdellä skriptiajolla."
 tags: [active-directory, powershell, windows-server, hyper-v, group-policy, windows-laps, identity-management, least-privilege, entra-id]
 ---
 
