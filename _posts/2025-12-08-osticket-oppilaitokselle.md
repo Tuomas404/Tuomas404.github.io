@@ -6,7 +6,7 @@ excerpt: "Tukipyyntöjärjestelmä oppilaitoksen omaan infrastruktuuriin: Proxmo
 tags: [proxmox, ubuntu, opnsense, wireguard, caddy, lets-encrypt, apache, mariadb, linux]
 ---
 
-**Lyhyesti:** Rakensin oppilaitokselle tukipyyntöjärjestelmän (osTicket) Proxmox-virtualisointialustalle. Julkaisin palvelun niin, että internetistä sinne pääsi vain WireGuard-VPN:n kautta. Yhteys salattiin HTTPS:llä, ja Let's Encrypt -sertifikaatin uusiminen automatisoitiin. Toteutin projektin itsenäisesti marras–joulukuussa 2025.
+**Lyhyesti:** Rakensin oppilaitokselle tukipyyntöjärjestelmän (osTicket) Proxmox-virtualisointialustalle. Julkaisin palvelun niin, että internetistä sinne pääsi vain WireGuard-VPN:n kautta. Yhteys salattiin HTTPS:llä, ja Let's Encrypt -sertifikaatin uusiminen automatisoitiin. Toteutin projektin itsenäisesti työharjoittelussa marras–joulukuussa 2025.
 
 **Teknologiat:** Proxmox VE · Ubuntu Server 24.04 · Apache · MariaDB 10.11 · PHP 8.3 · osTicket 1.18.1 · OPNsense · WireGuard · Caddy · ACME/Let's Encrypt (DNS-01) · Dynamic DNS · UFW · OpenSSH
 
@@ -24,15 +24,14 @@ tags: [proxmox, ubuntu, opnsense, wireguard, caddy, lets-encrypt, apache, mariad
 
 ```
 [Käyttäjä]
-   │  WireGuard-VPN (UDP, ainoa internetiin avattu portti)
+   │  WireGuard-tunneli (UDP, ainoa internetiin avattu portti)
+   │  tunnelin sisällä HTTPS :8443
    ▼
-[OPNsense]  palomuuri, VPN-päätepiste, sisäinen DNS
-   │  Caddy reverse proxy, HTTPS :8443 (Let's Encrypt)
-   ▼
-[Ubuntu VM @ Proxmox]  Apache + PHP + MariaDB
+[OPNsense]  palomuuri, WireGuard, Unbound-DNS,
+            Caddy reverse proxy (TLS päättyy tähän, Let's Encrypt)
    │  HTTP :80, vain sisäverkossa
    ▼
-[osTicket]
+[Ubuntu VM @ Proxmox]  Apache + PHP + MariaDB + osTicket
 ```
 
 | Komponentti | Rooli |
@@ -64,9 +63,9 @@ tags: [proxmox, ubuntu, opnsense, wireguard, caddy, lets-encrypt, apache, mariad
 ### 4. Julkaisu VPN:n taakse (OPNsense)
 - **Dynamic DNS** pitää domainin osoitteen ajan tasalla, kun operaattorin antama julkinen IP vaihtuu
 - **Let's Encrypt DNS-01 -haasteella:** HTTP-01 vaatisi portin 80 auki internetiin, eikä sitä avattu. DNS-01 validoi domainin DNS-tietueen kautta, joten se toimii ilman avattuja web-portteja.
-- **Caddy reverse proxy** porteissa 8080/8443, koska OPNsensen hallintapaneeli varaa portit 80 ja 443. TLS päättyy Caddyyn, joka välittää pyynnön polusta `/osticket/*` taustapalvelimelle sisäverkossa HTTP:nä.
+- **Caddy reverse proxy** porteissa 8080/8443, koska OPNsensen hallintapaneeli varaa portit 80 ja 443. TLS päättyy Caddyyn, joka välittää pyynnöt taustapalvelimelle sisäverkossa HTTP:nä (osTicket polussa `/osticket/`).
 - **Unbound host override:** VPN-käyttäjillä domain osoittaa OPNsensen sisäiseen osoitteeseen, jolloin sama osoite ja sama sertifikaatti toimivat myös tunnelin sisällä
-- **Palomuurisääntö** WireGuard-rajapinnassa: vain TCP 8443 palomuurille
+- **Palomuurisäännöt** WireGuard-rajapinnassa: palomuurille vain TCP 8443 (Caddy) ja 53 (DNS, jotta host override toimii)
 - **WAN-rajapinnassa** auki vain WireGuardin UDP-portti; osTicketin portteja ei avattu internetiin
 
 ![Dynamic DNS -asetus OPNsensessa](/kuvat/01-dyndns.png)
@@ -106,6 +105,7 @@ Luovutin valmiin järjestelmän ja teknisen dokumentaation oppilaitokselle joulu
 
 - **Tiedosto-oikeudet:** web-juuren omistajaksi root ja www-datalle kirjoitusoikeus vain niihin hakemistoihin, joihin sovelluksen on pakko kirjoittaa. Näin sovellus ei pysty muokkaamaan omaa koodiaan. `ost-config.php` palautetaan vain luettavaksi heti asennuksen jälkeen.
 - **Taustapalvelimen palomuuri:** portti 80 sallittuna vain OPNsensen osoitteesta, ei koko sisäverkosta.
+- **Caddyn käyttäjä:** Caddy ajossa oletuksena rootina (kuva yllä). Vaihtaisin sen vähäoikeuksiseen `www`-käyttäjään, jolloin mahdollinen murto Caddyn kautta ei anna heti koko palomuurin hallintaa.
 - **Varmuuskopiot:** Proxmoxin ajastetut VM-varmuuskopiot ja tietokannan dumppi, palautus testattuna.
 - **Päivitykset:** unattended-upgrades tietoturvapäivityksille ja seuranta osTicketin versiojulkaisuille.
 - **Valvonta:** QEMU guest agent sekä perusvalvonta levytilalle, muistille ja palvelun saatavuudelle.
