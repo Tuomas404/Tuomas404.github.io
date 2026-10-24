@@ -6,7 +6,7 @@ excerpt: "Tukipyyntöjärjestelmä oppilaitoksen omaan infrastruktuuriin: Proxmo
 tags: [proxmox, ubuntu, opnsense, wireguard, caddy, lets-encrypt, apache, mariadb, linux]
 ---
 
-**Lyhyesti:** Rakensin oppilaitokselle tukipyyntöjärjestelmän (osTicket) Proxmox-virtualisointialustalle. Julkaisin palvelun niin, että internetistä sinne pääsi vain WireGuard-VPN:n kautta. Yhteys salattiin HTTPS:llä, ja Let's Encrypt -sertifikaatin uusiminen automatisoitiin. Toteutin projektin itsenäisesti työharjoittelussa marras–joulukuussa 2025.
+**Lyhyesti:** Otin oppilaitoksessa käyttöön osTicket-tukipyyntöjärjestelmän omalla Linux-palvelimella ja suojasin sen niin, ettei palvelu näy julkiseen internetiin. Palvelin toimi Proxmox-virtualisointialustalla, ja internetistä palveluun pääsi vain WireGuard-VPN:n kautta. Yhteys salattiin HTTPS:llä, ja Let's Encrypt -sertifikaatin uusiminen automatisoitiin. Toteutin projektin itsenäisesti työharjoittelussa marras–joulukuussa 2025.
 
 **Teknologiat:** Proxmox VE · Ubuntu Server 24.04 · Apache · MariaDB 10.11 · PHP 8.3 · osTicket 1.18.1 · OPNsense · WireGuard · Caddy · ACME/Let's Encrypt (DNS-01) · Dynamic DNS · UFW · OpenSSH
 
@@ -58,12 +58,12 @@ tags: [proxmox, ubuntu, opnsense, wireguard, caddy, lets-encrypt, apache, mariad
 - SSH: avainpohjainen kirjautuminen, salasanakirjautuminen pois, root-kirjautuminen estetty
 - `~/.ssh` 700 ja `authorized_keys` 600
 - UFW päälle, sallittuna vain SSH ja HTTP
-- Tietokannan salasana vaihdettu vahvempaan ja päivitetty osTicketin konfiguraatioon
+- Vaihdoin tietokannan salasanan vahvempaan ja päivitin sen osTicketin konfiguraatioon
 
 ### 4. Julkaisu VPN:n taakse (OPNsense)
 - **Dynamic DNS** pitää domainin osoitteen ajan tasalla, kun operaattorin antama julkinen IP vaihtuu
 - **Let's Encrypt DNS-01 -haasteella:** HTTP-01 vaatisi portin 80 auki internetiin, eikä sitä avattu. DNS-01 validoi domainin DNS-tietueen kautta, joten se toimii ilman avattuja web-portteja.
-- **Caddy reverse proxy** porteissa 8080/8443, koska OPNsensen hallintapaneeli varaa portit 80 ja 443. TLS päättyy Caddyyn, joka välittää pyynnöt taustapalvelimelle sisäverkossa HTTP:nä (osTicket polussa `/osticket/`).
+- **Caddy reverse proxy** porteissa 8080 (HTTP) ja 8443 (HTTPS), koska OPNsensen hallintapaneeli varaa portit 80 ja 443. Palomuuri päästää VPN:stä vain porttiin 8443, joten käyttäjien liikenne kulkee aina HTTPS:nä. TLS päättyy Caddyyn, joka välittää pyynnöt taustapalvelimelle sisäverkossa HTTP:nä (osTicket polussa `/osticket/`).
 - **Unbound host override:** VPN-käyttäjillä domain osoittaa OPNsensen sisäiseen osoitteeseen, jolloin sama osoite ja sama sertifikaatti toimivat myös tunnelin sisällä
 - **Palomuurisäännöt** WireGuard-rajapinnassa: palomuurille vain TCP 8443 (Caddy) ja DNS-portti 53 (jotta host override toimii)
 - **WAN-rajapinnassa** auki vain WireGuardin UDP-portti; osTicketin portteja ei avattu internetiin
@@ -103,14 +103,14 @@ Luovutin valmiin järjestelmän ja teknisen dokumentaation oppilaitokselle joulu
 
 ## Mitä tekisin nyt toisin
 
-- **Tiedosto-oikeudet:** web-juuren omistajaksi root ja www-datalle kirjoitusoikeus vain niihin hakemistoihin, joihin sovelluksen on pakko kirjoittaa. Näin sovellus ei pysty muokkaamaan omaa koodiaan. `ost-config.php` palautetaan vain luettavaksi heti asennuksen jälkeen.
-- **Taustapalvelimen palomuuri:** portti 80 sallittuna vain OPNsensen osoitteesta, ei koko sisäverkosta.
-- **Caddyn käyttäjä:** Caddy ajossa oletuksena rootina (kuva yllä). Vaihtaisin sen vähäoikeuksiseen `www`-käyttäjään, jolloin mahdollinen murto Caddyn kautta ei anna heti koko palomuurin hallintaa.
-- **Varmuuskopiot:** Proxmoxin ajastetut VM-varmuuskopiot ja tietokannan dumppi, palautus testattuna.
-- **Päivitykset:** unattended-upgrades tietoturvapäivityksille ja seuranta osTicketin versiojulkaisuille.
-- **Valvonta:** QEMU guest agent sekä perusvalvonta levytilalle, muistille ja palvelun saatavuudelle.
-- **SSH-avaimet:** Ed25519 RSA-2048:n sijaan.
-- **Levytila:** LVM-taltioryhmästä jäi oletusasetuksilla puolet varaamatta. Kasvatettaisiin juuritaltiota tai jätettäisiin varaus tietoisena valintana dokumentoituna.
+- **Tiedosto-oikeudet:** Asettaisin web-juuren omistajaksi rootin ja antaisin www-datalle kirjoitusoikeuden vain niihin hakemistoihin, joihin sovelluksen on pakko kirjoittaa. Näin sovellus ei pysty muokkaamaan omaa koodiaan. Palauttaisin `ost-config.php`:n vain luettavaksi heti asennuksen jälkeen.
+- **Taustapalvelimen palomuuri:** Sallisin portin 80 vain OPNsensen osoitteesta, en koko sisäverkosta.
+- **Caddyn käyttäjä:** Caddy oli ajossa oletuksena rootina (kuva yllä). Vaihtaisin sen vähäoikeuksiseen `www`-käyttäjään, jolloin mahdollinen murto Caddyn kautta ei anna heti koko palomuurin hallintaa.
+- **Varmuuskopiot:** Ottaisin käyttöön Proxmoxin ajastetut VM-varmuuskopiot ja tietokannan dumpin sekä testaisin palautuksen.
+- **Päivitykset:** Ottaisin käyttöön unattended-upgradesin tietoturvapäivityksille ja seuraisin osTicketin versiojulkaisuja.
+- **Valvonta:** Asentaisin QEMU guest agentin ja perusvalvonnan levytilalle, muistille ja palvelun saatavuudelle.
+- **SSH-avaimet:** Käyttäisin Ed25519-avaimia RSA-2048-avainten sijaan.
+- **Levytila:** LVM-taltioryhmästä jäi oletusasetuksilla puolet varaamatta. Kasvattaisin juuritaltiota tai dokumentoisin varaamattoman tilan tietoisena valintana.
 
 ---
 

@@ -6,7 +6,7 @@ excerpt: "Hyper-V-labra, jossa Windows Server 2025 -toimialueohjain, toimialuees
 tags: [active-directory, powershell, windows-server, hyper-v, group-policy, windows-laps, identity-management, least-privilege, entra-id]
 ---
 
-**Lyhyesti:** Rakensin kotikoneelle Hyper-V-labran, jossa on Windows Server 2025 -toimialueohjain (DC, palvelin joka hallitsee toimialueen tunnuksia ja kirjautumisia). Automatisoin käyttäjien elinkaaren PowerShellillä: uudet työntekijät luodaan CSV-tiedostosta, ja lähtijät poistetaan käytöstä työntekijänumeron perusteella. HelpDesk-ryhmä voi nollata salasanoja ja avata lukituksia vain aktiivisilta käyttäjiltä. Liitin Windows 11 -työaseman toimialueeseen ja otin käyttöön tilin lukituksen sekä Windows LAPSin (paikallisen ylläpitäjän salasanan automaattinen hallinta). Tämä on sarjan ensimmäinen osa, ja toisessa osassa ympäristö synkronoidaan Microsoft Entra ID:hen. Toteutin projektin itsenäisesti lokakuussa 2026.
+**Lyhyesti:** Automatisoin Active Directoryn käyttäjähallinnan PowerShellillä, joten uusien työntekijöiden tunnukset luodaan ja lähtijöiden tunnukset suljetaan yhdellä skriptiajolla. Rakensin kotikoneelle Hyper-V-labran, jossa on Windows Server 2025 -toimialueohjain (DC, palvelin joka hallitsee toimialueen tunnuksia ja kirjautumisia). Uudet työntekijät luodaan CSV-tiedostosta, ja lähtijät poistetaan käytöstä työntekijänumeron perusteella. HelpDesk-ryhmä voi nollata salasanoja ja avata lukituksia vain aktiivisilta käyttäjiltä. Liitin Windows 11 -työaseman toimialueeseen ja otin käyttöön tilin lukituksen sekä Windows LAPSin (paikallisen ylläpitäjän salasanan automaattinen hallinta). Tämä on sarjan ensimmäinen osa, ja toisessa osassa ympäristö synkronoidaan Microsoft Entra ID:hen. Toteutin projektin itsenäisesti lokakuussa 2026.
 
 **Teknologiat:** Windows Server 2025 · Windows 11 · Active Directory Domain Services · DNS · ryhmäkäytännöt (GPO) · Windows LAPS · Hyper-V · PowerShell · PowerShell Direct · Git · gitleaks
 
@@ -124,11 +124,12 @@ Delegointi tarkoittaa, että annetaan rajattu ylläpito-oikeus ilman ylläpitäj
 - **Tilin lukitus Default Domain Policyssä:** 10 väärää yritystä, 15 minuutin lukitus ja 15 minuutin laskurin nollaus (Microsoftin tietoturvasuositus). Toimialuetunnusten salasana- ja lukitusasetukset toimivat vain toimialueen juureen linkitetystä GPO:sta.
 - **Lukitus testattu:** 10 väärää salasanaa CL01:llä lukitsi tilin, ja 11. yritys oikealla salasanalla hylättiin. DC01 kirjasi tapahtuman 4740, jossa lukituksen aiheuttajaksi näkyi CL01.
 - **Windows LAPS:** jokaisella työasemalla on oma satunnainen paikallisen ylläpitäjän salasana, joka vaihtuu 30 päivän välein ja tallentuu salattuna AD:hen. Skripti tekee GPO:n ja linkittää sen `OU=Workstations`-kansioon. Käsin luotu paikallinen ylläpitäjätunnus poistettiin käytöstä.
+- **LAPS testattu:** ajoin skriptin ensin `-WhatIf`-tilassa, sitten oikeasti ja sitten uudelleen, eikä uusi ajo muuttanut mitään. `Get-LapsADPassword` näytti, että CL01:n salasana on tallennettu AD:hen salattuna ja vanhenee 30 päivän päästä. Kirjautuminen LAPSin hallitsemalla `WLapsAdmin`-tunnuksella onnistui, ja käytöstä poistetun ylläpitäjätunnuksen kirjautuminen hylättiin.
 
 ## Tarkistukset
 
 - **Toimialueohjaimen kunto:** DNS-nimet ratkeavat, SYSVOL- ja NETLOGON-jaot ovat olemassa, ja DFSR-tapahtuma 4602 (SYSVOL-kansion replikointi käynnistyi) löytyy.
-- **Ennen repon julkaisua:** koko Git-historian tiedostolista ja gitleaks-skannaus (työkalu, joka etsii salasanoja ja avaimia commiteista). Kumpikin tarvitaan, koska gitleaks ei tunnista esimerkiksi CSV-rivillä olevaa satunnaista salasanaa.
+- **Ennen repon julkaisua:** Repossa ei ole ollut salasanoja missään vaiheessa, koska alkusalasanat tallennettiin alusta asti repon ulkopuolelle. Varmistin tämän käymällä läpi koko Git-historian tiedostolistan ja ajamalla gitleaks-skannauksen (työkalu, joka etsii salasanoja ja avaimia commiteista). Tarvitaan molemmat, koska gitleaks tunnistaa vain tunnetun muotoisia salaisuuksia, kuten API-avaimia, eikä välttämättä satunnaista salasanaa.
 
 ## Mitä opin
 
@@ -141,9 +142,9 @@ Delegointi tarkoittaa, että annetaan rajattu ylläpito-oikeus ilman ylläpitäj
 
 ## Mitä tekisin nyt toisin
 
-- Erilliset ylläpitäjätunnukset (`adm-`) omaan OU:hun alusta asti, jolloin ylläpito on erotettu arkikäytöstä
-- AD Recycle Bin (poistettujen objektien palautus) päälle heti asennuksen jälkeen
-- Automaattiset testit (Pester) ja koodin tarkistus (PSScriptAnalyzer) GitHub Actionsiin
+- Tekisin erilliset ylläpitäjätunnukset (`adm-`) omaan OU:hun alusta asti, jolloin ylläpito erottuu arkikäytöstä.
+- Ottaisin AD Recycle Binin (poistettujen objektien palautus) käyttöön heti asennuksen jälkeen.
+- Lisäisin automaattiset testit (Pester) ja koodin tarkistuksen (PSScriptAnalyzer) GitHub Actionsiin.
 - Isossa organisaatiossa käyttäjät luotaisiin suoraan HR-järjestelmästä Entra ID:hen. CSV ja PowerShell sopivat pieniin organisaatioihin ja ovat yhä yleisiä.
 
 ## Seuraavaksi (osa 2)

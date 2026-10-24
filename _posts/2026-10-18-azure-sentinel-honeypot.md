@@ -1,12 +1,12 @@
 ---
 layout: post
-title: "Azure Sentinel -honeypot: oikean brute force -hyökkäyksen tunnistus omilla säännöillä"
+title: "Microsoft Sentinel -honeypot: oikean brute force -hyökkäyksen tunnistus omilla säännöillä"
 date: 2026-10-18
 excerpt: "Internetiin avattu Windows Server Azuressa ja Microsoft Sentinel: kaksi omaa tunnistussääntöä (MITRE T1110), kontrolloidut testit ja oikea hyökkäys (81 epäonnistunutta kirjautumistapahtumaa) tunnistettuna, tutkittuna ja suljettuna. Säännöt julkaistaan koodina GitHub Actionsilla."
 tags: [azure, microsoft-sentinel, kql, log-analytics, windows-server, azure-cli, github-actions, oidc, mitre-attack, soc]
 ---
 
-**Lyhyesti:** Rakensin Azureen tarkoituksella internetiin avoimen Windows Server -koneen (honeypot = houkutuslaite) ja kytkin sen Microsoft Sentineliin. Kirjoitin kaksi omaa tunnistussääntöä RDP-brute forcelle, validoin molemmat omilla testeillä ja tunnistin ensimmäisen oikean hyökkäyksen vuorokauden sisällä. Säännöt ovat Gitissä, ja GitHub Actions julkaisee ne Sentineliin automaattisesti ilman tallennettuja salasanoja. Koko labra rakentuu ja purkautuu skripteillä. Toteutin projektin itsenäisesti lokakuussa 2026.
+**Lyhyesti:** Tunnistin Microsoft Sentinelillä oikean RDP-brute force -hyökkäyksen vuorokauden sisällä omilla tunnistussäännöilläni. Rakensin Azureen tarkoituksella internetiin avoimen Windows Server -koneen (honeypot = houkutuslaite), kirjoitin sille kaksi tunnistussääntöä ja validoin molemmat omilla testeillä. Säännöt ovat Gitissä, ja GitHub Actions julkaisee ne Sentineliin automaattisesti ilman tallennettuja salasanoja. Koko labra rakentuu ja purkautuu skripteillä. Toteutin projektin itsenäisesti lokakuussa 2026.
 
 **Teknologiat:** Microsoft Azure · Microsoft Sentinel · Log Analytics · KQL · Azure Monitor Agent · Data Collection Rule · Windows Server 2025 (Trusted Launch) · Azure CLI · Bash · GitHub Actions · OIDC · MITRE ATT&CK
 
@@ -83,7 +83,7 @@ SecurityEvent
 
 | | |
 |---|---|
-| Toiminta | 81 epäonnistunutta kirjautumistapahtumaa (EventID 4625) yhdestä IP:stä klo 15:59–19:58 UTC, enimmillään 21 tunnissa |
+| Toiminta | 81 epäonnistunutta kirjautumistapahtumaa (EventID 4625) yhdestä IP:stä klo 15:59–19:58 UTC, enimmillään 21 tapahtumaa tunnissa |
 | IP:n sijainti | Intia (sijainti kertoo, missä IP on, ei kuka hyökkääjä on) |
 | Kokeillut tunnukset | `Administrator`, `Admin`: kumpaakaan ei ole koneella |
 | Onnistuneet etäkirjautumiset | Ei yhtään (ei EventID 4624 tyyppiä 3 tai 10 ulkoisista IP:istä 3 vuorokauden aikana) |
@@ -130,9 +130,9 @@ Tunnistussäännöt ovat repossa JSON-tiedostoina. Kun muutan sääntöä ja pus
 
 ## Mitä tekisin nyt toisin
 
-- Infrastruktuuri koodina Bicepillä Bash-skriptien sijaan
-- Automaatiosääntö, joka sulkee omien testi-IP:ideni incidentit automaattisesti
-- Säännöille testi, joka ajaa KQL-kyselyn ennen julkaisua eikä tarkista pelkkää tiedoston rakennetta
+- Tekisin infrastruktuurin koodina Bicepillä Bash-skriptien sijaan.
+- Lisäisin automaatiosäännön, joka sulkee omien testi-IP:ideni incidentit automaattisesti.
+- Lisäisin säännöille testin, joka ajaa KQL-kyselyn ennen julkaisua eikä tarkista pelkkää tiedoston rakennetta.
 
 ## Kustannukset
 
