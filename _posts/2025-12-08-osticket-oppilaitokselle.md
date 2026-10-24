@@ -65,7 +65,7 @@ tags: [proxmox, ubuntu, opnsense, wireguard, caddy, lets-encrypt, apache, mariad
 - **Let's Encrypt DNS-01 -haasteella:** HTTP-01 vaatisi portin 80 auki internetiin, eikä sitä avattu. DNS-01 validoi domainin DNS-tietueen kautta, joten se toimii ilman avattuja web-portteja.
 - **Caddy reverse proxy** porteissa 8080/8443, koska OPNsensen hallintapaneeli varaa portit 80 ja 443. TLS päättyy Caddyyn, joka välittää pyynnöt taustapalvelimelle sisäverkossa HTTP:nä (osTicket polussa `/osticket/`).
 - **Unbound host override:** VPN-käyttäjillä domain osoittaa OPNsensen sisäiseen osoitteeseen, jolloin sama osoite ja sama sertifikaatti toimivat myös tunnelin sisällä
-- **Palomuurisäännöt** WireGuard-rajapinnassa: palomuurille vain TCP 8443 (Caddy) ja 53 (DNS, jotta host override toimii)
+- **Palomuurisäännöt** WireGuard-rajapinnassa: palomuurille vain TCP 8443 (Caddy) ja DNS-portti 53 (jotta host override toimii)
 - **WAN-rajapinnassa** auki vain WireGuardin UDP-portti; osTicketin portteja ei avattu internetiin
 
 ![Dynamic DNS -asetus OPNsensessa](/kuvat/01-dyndns.png)
