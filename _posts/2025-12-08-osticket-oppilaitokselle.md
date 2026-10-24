@@ -2,11 +2,11 @@
 layout: post
 title: "osTicket oppilaitokselle: VPN-rajattu julkaisu Proxmoxilla ja OPNsensellä"
 date: 2025-12-08
-excerpt: "Tukipyyntöjärjestelmä oppilaitoksen omaan infrastruktuuriin: Proxmox-virtualisointi, Ubuntu-palvelin sekä OPNsense, jonka takaa palvelu julkaistiin vain WireGuard-VPN:n kautta Let's Encrypt -sertifikaatilla."
+excerpt: "Tukipyyntöjärjestelmä oppilaitoksen omaan infrastruktuuriin: Proxmox, Ubuntu-palvelin ja OPNsense. Internetistä palveluun pääsi vain WireGuard-VPN:n kautta, ja HTTPS-sertifikaatti uusiutui automaattisesti."
 tags: [proxmox, ubuntu, opnsense, wireguard, caddy, lets-encrypt, apache, mariadb, linux]
 ---
 
-**Lyhyesti:** Rakensin oppilaitokselle tukipyyntöjärjestelmän (osTicket) Proxmox-virtualisointialustalle. Palvelu on saavutettavissa vain WireGuard-VPN:n kautta, ja yhteys on salattu Let's Encrypt -sertifikaatilla, jonka uusiminen on automatisoitu. Toteutin projektin itsenäisesti marras–joulukuussa 2025.
+**Lyhyesti:** Rakensin oppilaitokselle tukipyyntöjärjestelmän (osTicket) Proxmox-virtualisointialustalle. Julkaisin palvelun niin, että internetistä sinne pääsi vain WireGuard-VPN:n kautta. Yhteys salattiin HTTPS:llä, ja Let's Encrypt -sertifikaatin uusiminen automatisoitiin. Toteutin projektin itsenäisesti marras–joulukuussa 2025.
 
 **Teknologiat:** Proxmox VE · Ubuntu Server 24.04 · Apache · MariaDB 10.11 · PHP 8.3 · osTicket 1.18.1 · OPNsense · WireGuard · Caddy · ACME/Let's Encrypt (DNS-01) · Dynamic DNS · UFW · OpenSSH
 
@@ -17,14 +17,14 @@ tags: [proxmox, ubuntu, opnsense, wireguard, caddy, lets-encrypt, apache, mariad
 ## Tavoite
 
 - Tukipyyntöjärjestelmä oppilaitoksen omaan infrastruktuuriin ja hallintaan
-- Ei porttiavausta julkiseen internetiin: pääsy vain VPN:n kautta
+- Palvelu ei näy julkiseen internetiin: auki vain WireGuardin UDP-portti, pääsy internetistä vain VPN:n kautta
 - Salattu yhteys ilman selaimen varoituksia ja ilman käsin tehtävää sertifikaattien uusimista
 
 ## Arkkitehtuuri
 
 ```
 [Käyttäjä]
-   │  WireGuard-VPN
+   │  WireGuard-VPN (UDP, ainoa internetiin avattu portti)
    ▼
 [OPNsense]  palomuuri, VPN-päätepiste, sisäinen DNS
    │  Caddy reverse proxy, HTTPS :8443 (Let's Encrypt)
@@ -63,10 +63,11 @@ tags: [proxmox, ubuntu, opnsense, wireguard, caddy, lets-encrypt, apache, mariad
 
 ### 4. Julkaisu VPN:n taakse (OPNsense)
 - **Dynamic DNS** pitää domainin osoitteen ajan tasalla, kun operaattorin antama julkinen IP vaihtuu
-- **Let's Encrypt DNS-01 -haasteella:** HTTP-01 ei toimi, koska palvelimelle ei tule sisääntulevia yhteyksiä internetistä. DNS-01 validoi domainin DNS-tietueen kautta, joten se toimii ilman avattuja portteja.
+- **Let's Encrypt DNS-01 -haasteella:** HTTP-01 vaatisi portin 80 auki internetiin, eikä sitä avattu. DNS-01 validoi domainin DNS-tietueen kautta, joten se toimii ilman avattuja web-portteja.
 - **Caddy reverse proxy** porteissa 8080/8443, koska OPNsensen hallintapaneeli varaa portit 80 ja 443. TLS päättyy Caddyyn, joka välittää pyynnön polusta `/osticket/*` taustapalvelimelle sisäverkossa HTTP:nä.
 - **Unbound host override:** VPN-käyttäjillä domain osoittaa OPNsensen sisäiseen osoitteeseen, jolloin sama osoite ja sama sertifikaatti toimivat myös tunnelin sisällä
 - **Palomuurisääntö** WireGuard-rajapinnassa: vain TCP 8443 palomuurille
+- **WAN-rajapinnassa** auki vain WireGuardin UDP-portti; osTicketin portteja ei avattu internetiin
 
 ![Dynamic DNS -asetus OPNsensessa](/kuvat/01-dyndns.png)
 
