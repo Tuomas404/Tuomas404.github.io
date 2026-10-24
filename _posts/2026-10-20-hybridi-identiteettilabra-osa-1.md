@@ -2,13 +2,13 @@
 layout: post
 title: "Hybridi-identiteettilabra, osa 1: Active Directory ja käyttäjien elinkaari PowerShellillä"
 date: 2026-10-20
-excerpt: "Hyper-V-labra, jossa Windows Server 2025 -toimialueohjain ja PowerShell-automaatio käyttäjien käyttöönottoon ja käytöstä poistoon. HelpDeskin oikeudet rajattu vähimpiin ja testattu. Osassa 2 ympäristö synkronoidaan Entra ID:hen."
-tags: [active-directory, powershell, windows-server, hyper-v, identity-management, least-privilege, entra-id]
+excerpt: "Hyper-V-labra, jossa Windows Server 2025 -toimialueohjain, toimialueeseen liitetty Windows 11 -työasema ja PowerShell-automaatio käyttäjien käyttöönottoon ja käytöstä poistoon. HelpDeskin oikeudet rajattu vähimpiin, tilin lukitus ja Windows LAPS käytössä ja testattu. Osassa 2 ympäristö synkronoidaan Entra ID:hen."
+tags: [active-directory, powershell, windows-server, hyper-v, group-policy, windows-laps, identity-management, least-privilege, entra-id]
 ---
 
-**Lyhyesti:** Rakensin kotikoneelle Hyper-V-labran, jossa on Windows Server 2025 -toimialueohjain (DC, palvelin joka hallitsee toimialueen tunnuksia ja kirjautumisia). Automatisoin käyttäjien elinkaaren PowerShellillä: uudet työntekijät luodaan CSV-tiedostosta, ja lähtijät poistetaan käytöstä työntekijänumeron perusteella. HelpDesk-ryhmä voi nollata salasanoja ja avata lukituksia vain aktiivisilta käyttäjiltä. Tämä on sarjan ensimmäinen osa, ja toisessa osassa ympäristö synkronoidaan Microsoft Entra ID:hen. Toteutin projektin itsenäisesti lokakuussa 2026.
+**Lyhyesti:** Rakensin kotikoneelle Hyper-V-labran, jossa on Windows Server 2025 -toimialueohjain (DC, palvelin joka hallitsee toimialueen tunnuksia ja kirjautumisia). Automatisoin käyttäjien elinkaaren PowerShellillä: uudet työntekijät luodaan CSV-tiedostosta, ja lähtijät poistetaan käytöstä työntekijänumeron perusteella. HelpDesk-ryhmä voi nollata salasanoja ja avata lukituksia vain aktiivisilta käyttäjiltä. Liitin Windows 11 -työaseman toimialueeseen ja otin käyttöön tilin lukituksen sekä Windows LAPSin (paikallisen ylläpitäjän salasanan automaattinen hallinta). Tämä on sarjan ensimmäinen osa, ja toisessa osassa ympäristö synkronoidaan Microsoft Entra ID:hen. Toteutin projektin itsenäisesti lokakuussa 2026.
 
-**Teknologiat:** Windows Server 2025 · Active Directory Domain Services · DNS · Hyper-V · PowerShell · PowerShell Direct · Git · gitleaks
+**Teknologiat:** Windows Server 2025 · Windows 11 · Active Directory Domain Services · DNS · ryhmäkäytännöt (GPO) · Windows LAPS · Hyper-V · PowerShell · PowerShell Direct · Git · gitleaks
 
 **Koodi:** [github.com/Tuomas404/hybrid-identity-lab](https://github.com/Tuomas404/hybrid-identity-lab)
 
@@ -29,7 +29,7 @@ tags: [active-directory, powershell, windows-server, hyper-v, identity-managemen
    ▼
 [DC01: Windows Server 2025]  AD DS + DNS, toimialue lab.test, 10.10.10.10
    │
-   ├──▶ [CL01: Windows 11 -testikone]  osa 2
+   ├──▶ [CL01: Windows 11 -työasema]  toimialueessa, 10.10.10.20
    │
    ▼
 [Microsoft Entra ID]  synkronointi, osa 2
@@ -117,6 +117,14 @@ Delegointi tarkoittaa, että annetaan rajattu ylläpito-oikeus ilman ylläpitäj
 - **Miksi Disabled on Usersin rinnalla:** oikeus periytyy vain Usersin alle, joten lähteneen työntekijän tunnusta ei voi ottaa uudelleen käyttöön salasanan nollauksella.
 - **Skripti eikä ohjattu toiminto:** Windowsin Delegation of Control -ohjattu toiminto ei jätä jälkeä siitä, mitä annettiin. Skripti on toistettava ja versiohallittu. Liian laajat delegoinnit ovat yleinen AD-hyökkäysreitti.
 
+## Työasema, tilin lukitus ja LAPS
+
+- **CL01 toimialueeseen:** `Add-Computer -OUPath` liitti koneen suoraan `OU=Workstations`-kansioon. Oletuksena kone menisi `CN=Computers`-säiliöön, joka ei ole OU, eikä siihen voi linkittää ryhmäkäytäntöjä.
+- **Toimialuekirjautuminen testattu:** testikäyttäjä kirjautui CL01:lle ja vaihtoi alkusalasanan pakotetusti ensimmäisellä kirjautumisella.
+- **Tilin lukitus Default Domain Policyssä:** 10 väärää yritystä, 15 minuutin lukitus ja 15 minuutin laskurin nollaus (Microsoftin tietoturvasuositus). Toimialuetunnusten salasana- ja lukitusasetukset toimivat vain toimialueen juureen linkitetystä GPO:sta.
+- **Lukitus testattu:** 10 väärää salasanaa CL01:llä lukitsi tilin, ja 11. yritys oikealla salasanalla hylättiin. DC01 kirjasi tapahtuman 4740, jossa lukituksen aiheuttajaksi näkyi CL01.
+- **Windows LAPS:** jokaisella työasemalla on oma satunnainen paikallisen ylläpitäjän salasana, joka vaihtuu 30 päivän välein ja tallentuu salattuna AD:hen. Skripti tekee GPO:n ja linkittää sen `OU=Workstations`-kansioon. Käsin luotu paikallinen ylläpitäjätunnus poistettiin käytöstä.
+
 ## Tarkistukset
 
 - **Toimialueohjaimen kunto:** DNS-nimet ratkeavat, SYSVOL- ja NETLOGON-jaot ovat olemassa, ja DFSR-tapahtuma 4602 (SYSVOL-kansion replikointi käynnistyi) löytyy.
@@ -140,7 +148,7 @@ Delegointi tarkoittaa, että annetaan rajattu ylläpito-oikeus ilman ylläpitäj
 
 ## Seuraavaksi (osa 2)
 
-- Windows 11 -testikone toimialueeseen ja ryhmäkäytännöt
+- Lisää työasemien ryhmäkäytäntöjä `OU=Workstations`-kansioon
 - Synkronointi Entra ID:hen, MFA ja ehdollinen pääsy (Conditional Access)
 - Entra ID:n kirjautumislokit Microsoft Sentineliin, mikä yhdistää labran [honeypot-projektiini]({% post_url 2026-10-18-azure-sentinel-honeypot %})
 
